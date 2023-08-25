@@ -1,0 +1,6 @@
+@media (max-width: 418px){
+    .cadastro, .remover, .quantidade, .estoquee{
+        margin: auto;
+        padding: 22px;
+    }
+}

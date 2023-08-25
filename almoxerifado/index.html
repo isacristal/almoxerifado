@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="mobile.css">
+    <title>Controle de Estoque</title>
+</head>
+<body>
+    <section id="main">
+        <h1>Controle de Estoque</h1>
+
+        <div class="cadastro">
+            <h2>Cadastrar produto</h2>
+            <input type="text" id="nomeProduto" placeholder="Nome do produto">
+            <input type="number" id="quantidadeProduto" placeholder="Quantidade">
+            <div class="btn">
+                <button onclick="cadastrarProduto(document.getElementById('nomeProduto').value, parseInt(document.getElementById('quantidadeProduto').value))">Cadastrar</button>
+            </div>
+        </div>
+
+        <div class="quantidade">
+            <h2>Adicionar quantidade</h2>
+            <input type="text" id="nomeProdutoAdicionar" placeholder="Nome do produto">
+            <input type="number" id="quantidadeAdicionar" placeholder="Quantidade">
+            <div class="btn">
+                <button onclick="adicionarQuantidade(document.getElementById('nomeProdutoAdicionar').value, parseInt(document.getElementById('quantidadeAdicionar').value))">Adicionar</button>
+            </div>
+        </div>
+
+        <div class="remover">
+            <h2>Remover quantidade</h2>
+            <input type="text" id="nomeProdutoRemover" placeholder="Nome do produto">
+            <input type="number" id="quantidadeRemover" placeholder="Quantidade">
+            <div class="btn">
+                <button class="btn2" onclick="removerQuantidade(document.getElementById('nomeProdutoRemover').value, parseInt(document.getElementById('quantidadeRemover').value))">
+                    <svg viewBox="0 0 448 512" class="svgIcon"><path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="estoquee">
+            <h2>Estoque</h2>
+            <table border="1" id="estoqueTable">
+                <tr>
+                    <th colspan="4">Produto</th>
+                    <th colspan="4">Quantidade</th>
+                </tr>
+            </table>
+            <p id="produtosEsgotados"><strong>Produtos Esgotados:</strong></p>
+        </div>
+    </section>
+
+    <script>
+        let estoque = [];
+        let produtosEsgotados = [];
+
+        const storedEstoque = localStorage.getItem("estoque");
+        if (storedEstoque) {
+            estoque = JSON.parse(storedEstoque);
+            atualizarTabela();
+        }
+
+        function produtoExiste(nome) {
+            return estoque.some(item => item.nome === nome);
+        }
+
+        function cadastrarProduto(nome, quantidade) {
+            if (!produtoExiste(nome)) {
+                estoque.push({ nome, quantidade });
+                atualizarTabela();
+                localStorage.setItem("estoque", JSON.stringify(estoque));
+            } else {
+                alert("Esse produto já está na lista.");
+            }
+        }
+
+        function adicionarQuantidade(nome, quantidade) {
+            const produto = estoque.find(item => item.nome === nome);
+            if (produto) {
+                produto.quantidade += quantidade;
+                atualizarTabela();
+            }
+        }
+
+        function removerQuantidade(nome, quantidade) {
+            const produto = estoque.find(item => item.nome === nome);
+            if (produto) {
+                produto.quantidade -= quantidade;
+                if (produto.quantidade <= 0) {
+                    produto.quantidade = 0;
+                    estoque = estoque.filter(item => item.nome !== nome);
+                    produtosEsgotados.push(nome);
+                }
+                atualizarTabela();
+            }
+        }
+
+        function atualizarTabela() {
+            const tabela = document.getElementById("estoqueTable");
+            tabela.innerHTML = "<tr><th>Produto</th><th>Quantidade</th></tr>";
+
+            estoque = estoque.filter(item => item.quantidade > 0);
+
+            estoque.forEach(item => {
+                const row = tabela.insertRow();
+                const cellNome = row.insertCell(0);
+                const cellQuantidade = row.insertCell(1);
+
+                cellNome.innerHTML = item.nome;
+                cellQuantidade.innerHTML = item.quantidade;
+            });
+
+            localStorage.setItem("estoque", JSON.stringify(estoque));
+
+            const esgotadosList = document.getElementById("produtosEsgotados");
+            esgotadosList.innerHTML = "<strong>Produtos Esgotados:</strong> " + produtosEsgotados.join(", ");
+        }
+    </script>
+</body>
+</html>
